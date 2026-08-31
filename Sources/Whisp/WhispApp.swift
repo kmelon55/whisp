@@ -1,8 +1,14 @@
+import Sparkle
 import SwiftUI
 
 @main
 struct WhispApp: App {
     @StateObject private var appState = AppState()
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     var body: some Scene {
         WindowGroup("Whisp", id: "settings") {
@@ -22,7 +28,7 @@ struct WhispApp: App {
         .windowResizability(.contentMinSize)
 
         MenuBarExtra {
-            MenuBarContentView()
+            MenuBarContentView(updaterController: updaterController)
                 .environmentObject(appState)
                 .environment(\.appLanguage, appState.settings.appLanguage)
                 .environment(\.locale, appState.settings.appLanguage.locale)
@@ -36,6 +42,7 @@ struct WhispApp: App {
 private struct MenuBarContentView: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.openWindow) private var openWindow
+    let updaterController: SPUStandardUpdaterController
 
     var body: some View {
         Button(menuButtonTitle) {
@@ -56,6 +63,10 @@ private struct MenuBarContentView: View {
             openWindow(id: "settings")
         }
         .keyboardShortcut(",")
+
+        Button(language.text("업데이트 확인…", "Check for Updates…")) {
+            updaterController.checkForUpdates(nil)
+        }
 
         Divider()
 

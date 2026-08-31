@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag matches app version
+        shell: zsh
+        run: |
+          app_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+          test "v$app_version" = "$GITHUB_REF_NAME"
+
+      - name: Build release archive
+        shell: zsh
+        run: |
+          ./Scripts/test-core.sh
+          ./Scripts/package-release.sh
+
+      - name: Generate signed Sparkle appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        shell: zsh
+        run: |
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+          cp RELEASE_NOTES.md "release/Whisp-$version.md"
+          print -rn -- "$SPARKLE_PRIVATE_KEY" | \
+            .build/artifacts/sparkle/Sparkle/bin/generate_appcast \
+              --ed-key-file - \
+              --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/" \
+              --embed-release-notes \
+              --link "https://github.com/$GITHUB_REPOSITORY" \
+              release
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: zsh
+        run: |
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+          cp "release/Whisp-$version.zip" release/Whisp.zip
+          gh release create "$GITHUB_REF_NAME" \
+            release/Whisp-*.zip \
+            release/Whisp.zip \
+            release/appcast.xml \
+            --title "Whisp $GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.md

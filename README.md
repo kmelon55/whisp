@@ -24,6 +24,7 @@ Raycast Dictation처럼 전역 단축키 하나와 화면 중앙의 파형에 �
 - 녹음 시작 시 선택된 입력 칸에 직접 입력하고, 찾지 못한 경우에만 클립보드로 복사
 - API 키는 macOS Keychain에만 저장
 - 메뉴바 상주, 라이트/다크 모드 지원
+- 앱 안에서 새 버전 자동 확인 · Sparkle 서명 업데이트
 
 ## 요구 사항
 
@@ -33,6 +34,14 @@ Raycast Dictation처럼 전역 단축키 하나와 화면 중앙의 파형에 �
 - 로컬 모드: [`whisper.cpp`](https://github.com/ggerganov/whisper.cpp)
 
 ## 실행
+
+### 다운로드
+
+[최신 Whisp 다운로드](https://github.com/kmelon55/mac-dictation/releases/latest/download/Whisp.zip) 후 압축을 풀고 `Whisp.app`을 응용 프로그램 폴더로 옮깁니다.
+
+현재 공개 배포본은 Developer ID 공증 전 단계입니다. macOS가 처음 실행을 막으면 **시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기**에서 한 번 허용해 주세요. 이후 새 버전은 메뉴바의 **업데이트 확인…** 또는 자동 확인 알림에서 설치할 수 있습니다.
+
+### 소스에서 실행
 
 앱 번들을 만듭니다.
 
@@ -118,7 +127,7 @@ Sources/Whisp/
 └── UI/         중앙 파형 패널과 설정 화면
 ```
 
-SwiftUI, AppKit, AVFoundation, Carbon만 사용합니다. 외부 Swift 패키지 의존성이 없습니다.
+앱 본체는 SwiftUI, AppKit, AVFoundation, Carbon으로 구성되며, 안전한 앱 업데이트에 Sparkle을 사용합니다.
 
 ## 테스트
 

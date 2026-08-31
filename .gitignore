@@ -2,5 +2,6 @@
 .build/
 .swiftpm/
 dist/
+release/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
