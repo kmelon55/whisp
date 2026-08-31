@@ -6,6 +6,7 @@ INFO_PLIST="$PROJECT_DIR/Resources/Info.plist"
 RELEASE_DIR="$PROJECT_DIR/release"
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$INFO_PLIST")"
 ARCHIVE="$RELEASE_DIR/Whisp-$VERSION.dmg"
+SIGN_IDENTITY="${WHISP_SIGN_IDENTITY:--}"
 
 "$PROJECT_DIR/Scripts/build-app.sh"
 mkdir -p "$RELEASE_DIR"
@@ -20,6 +21,11 @@ hdiutil create \
   -format UDZO \
   -ov \
   "$ARCHIVE"
+
+if [[ "$SIGN_IDENTITY" != "-" ]]; then
+  codesign --force --timestamp --sign "$SIGN_IDENTITY" "$ARCHIVE"
+  codesign --verify --verbose=2 "$ARCHIVE"
+fi
 
 codesign --verify --deep --strict --verbose=2 "$PROJECT_DIR/dist/Whisp.app"
 spctl --assess --type execute --verbose=2 "$PROJECT_DIR/dist/Whisp.app" || true
