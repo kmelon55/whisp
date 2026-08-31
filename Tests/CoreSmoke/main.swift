@@ -28,6 +28,22 @@ expect(
     "런타임 오류 현지화"
 )
 
+MainActor.assumeIsolated {
+    let shortcutDefaultsName = "Whisp.CoreSmoke.ShortcutDefaults"
+    let shortcutDefaults = UserDefaults(suiteName: shortcutDefaultsName)!
+    shortcutDefaults.removePersistentDomain(forName: shortcutDefaultsName)
+    shortcutDefaults.set(true, forKey: "didMigrateLegacyVercelKey")
+    let defaultSettings = AppSettings(defaults: shortcutDefaults)
+    let shortcutIsEnabled = defaultSettings.shortcutMode == .custom
+    let shortcutIsDoubleControl = defaultSettings.customShortcutKind.rawValue
+        == CustomShortcutKind.doubleControl.rawValue
+    let shortcutLabelIsControl = defaultSettings.customShortcutLabel == "⌃  ⌃"
+    expect(shortcutIsEnabled, "기본 단축키 활성화")
+    expect(shortcutIsDoubleControl, "Control 두 번 기본값")
+    expect(shortcutLabelIsControl, "Control 두 번 기본 라벨")
+    shortcutDefaults.removePersistentDomain(forName: shortcutDefaultsName)
+}
+
 var form = MultipartFormData()
 form.addField(name: "model", value: "gpt-4o-mini-transcribe")
 form.addFile(name: "file", filename: "recording.wav", mimeType: "audio/wav", data: Data([0x01, 0x02]))

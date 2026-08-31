@@ -164,12 +164,12 @@ final class AppSettings: ObservableObject {
         whisperPath = defaults.string(forKey: Key.whisperPath) ?? ""
         let savedShortcutMode = defaults.string(forKey: Key.shortcutMode) ?? ""
         shortcutMode = ShortcutMode(rawValue: savedShortcutMode) ?? .custom
-        customShortcutKeyCode = UInt32(defaults.object(forKey: Key.shortcutKeyCode) as? Int ?? 49)
-        customShortcutModifiers = UInt32(defaults.object(forKey: Key.shortcutModifiers) as? Int ?? Int(optionKey))
-        customShortcutLabel = defaults.string(forKey: Key.shortcutLabel) ?? "⌥ Space"
+        customShortcutKeyCode = UInt32(defaults.object(forKey: Key.shortcutKeyCode) as? Int ?? 59)
+        customShortcutModifiers = UInt32(defaults.object(forKey: Key.shortcutModifiers) as? Int ?? Int(controlKey))
+        customShortcutLabel = defaults.string(forKey: Key.shortcutLabel) ?? "⌃  ⌃"
         customShortcutKind = CustomShortcutKind(
             rawValue: defaults.string(forKey: Key.customShortcutKind) ?? ""
-        ) ?? (savedShortcutMode == "doubleControl" ? .doubleControl : .keyCombination)
+        ) ?? .doubleControl
         autoPaste = defaults.object(forKey: Key.autoPaste) as? Bool ?? true
 
         // 0.1에서 저장한 키 확인은 최초 한 번만 합니다. 매 실행마다 Keychain을

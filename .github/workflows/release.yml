@@ -48,10 +48,10 @@ jobs:
         shell: bash
         run: |
           version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
-          cp "release/Whisp-$version.zip" release/Whisp.zip
+          cp "release/Whisp-$version.dmg" release/Whisp.dmg
           gh release create "$GITHUB_REF_NAME" \
-            release/Whisp-*.zip \
-            release/Whisp.zip \
+            release/Whisp-*.dmg \
+            release/Whisp.dmg \
             release/appcast.xml \
             --title "Whisp $GITHUB_REF_NAME" \
             --notes-file RELEASE_NOTES.md
