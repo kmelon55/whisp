@@ -6,6 +6,8 @@
     <string>Whisp</string>
     <key>CFBundleExecutable</key>
     <string>Whisp</string>
+    <key>CFBundleIconFile</key>
+    <string>Whisp.icns</string>
     <key>CFBundleIdentifier</key>
     <string>app.whisp.mac-dictation</string>
     <key>CFBundleInfoDictionaryVersion</key>

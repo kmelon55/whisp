@@ -13,6 +13,7 @@ rm -rf "$APP_BUNDLE"
 mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Resources"
 cp "$PROJECT_DIR/.build/release/Whisp" "$CONTENTS/MacOS/Whisp"
 cp "$PROJECT_DIR/Resources/Info.plist" "$CONTENTS/Info.plist"
+"$PROJECT_DIR/Scripts/build-icon.sh" "$CONTENTS/Resources/Whisp.icns"
 mkdir -p "$CONTENTS/Frameworks"
 ditto \
   "$PROJECT_DIR/.build/release/Sparkle.framework" \

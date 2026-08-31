@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="420" viewBox="0 0 660 420">
+  <defs>
+    <linearGradient id="background" x1="45" y1="10" x2="615" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B2030"/>
+      <stop offset="0.54" stop-color="#0D1019"/>
+      <stop offset="1" stop-color="#07080D"/>
+    </linearGradient>
+    <radialGradient id="blueGlow" cx="0" cy="0" r="1" gradientTransform="translate(151 151) rotate(35) scale(310 220)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4ED9FF" stop-opacity="0.19"/>
+      <stop offset="1" stop-color="#4ED9FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pinkGlow" cx="0" cy="0" r="1" gradientTransform="translate(558 358) rotate(-140) scale(300 210)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#CF76FF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#CF76FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arrow" x1="276" y1="250" x2="384" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#73E4FF"/>
+      <stop offset="1" stop-color="#D49AFF"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="660" height="420" fill="url(#background)"/>
+  <rect width="660" height="420" fill="url(#blueGlow)"/>
+  <rect width="660" height="420" fill="url(#pinkGlow)"/>
+  <path d="M1 1H659V419H1V1Z" fill="none" stroke="#fff" stroke-opacity="0.08" stroke-width="2"/>
+
+  <text x="330" y="59" text-anchor="middle" fill="#F7F8FF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="30" font-weight="650">Whisp</text>
+  <text x="330" y="88" text-anchor="middle" fill="#C7CBDA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Drag Whisp to Applications</text>
+
+  <path d="M278 224H374" stroke="url(#arrow)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M360 211L376 224L360 237" fill="none" stroke="#D49AFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="330" y="384" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.4" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Double-tap Control. Speak. Done.</text>
+</svg>

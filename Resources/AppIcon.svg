@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="shell" x1="160" y1="96" x2="864" y2="928" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#272E42"/>
+      <stop offset="0.48" stop-color="#121622"/>
+      <stop offset="1" stop-color="#07090F"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="255" y1="300" x2="770" y2="724" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7EEBFF"/>
+      <stop offset="0.5" stop-color="#AFA6FF"/>
+      <stop offset="1" stop-color="#FF8BD7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(512 510) rotate(90) scale(395)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7B9EFF" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#7B9EFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="70" y="50" width="884" height="924" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="30" stdDeviation="34" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="waveGlow" x="180" y="210" width="664" height="604" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+    <clipPath id="iconClip">
+      <rect x="112" y="92" width="800" height="800" rx="186"/>
+    </clipPath>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="112" y="92" width="800" height="800" rx="186" fill="url(#shell)"/>
+  </g>
+  <g clip-path="url(#iconClip)">
+    <circle cx="512" cy="510" r="395" fill="url(#glow)"/>
+    <path d="M138 214C301 104 510 83 689 141C783 171 855 219 916 286V92H112V235C120 228 129 221 138 214Z" fill="#fff" fill-opacity="0.09"/>
+    <path d="M174 190C338 99 541 102 715 171" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="10" stroke-linecap="round"/>
+  </g>
+
+  <path d="M256 514H300L327 410L365 646L408 342L455 690L502 286L552 728L598 358L641 656L682 420L715 574L742 514H768" fill="none" stroke="url(#wave)" stroke-opacity="0.42" stroke-width="52" stroke-linecap="round" stroke-linejoin="round" filter="url(#waveGlow)"/>
+  <path d="M256 514H300L327 410L365 646L408 342L455 690L502 286L552 728L598 358L641 656L682 420L715 574L742 514H768" fill="none" stroke="url(#wave)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M246 786H778" stroke="#fff" stroke-opacity="0.12" stroke-width="2"/>
+</svg>
