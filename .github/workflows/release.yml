@@ -16,13 +16,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Verify tag matches app version
-        shell: zsh
+        shell: bash
         run: |
           app_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
           test "v$app_version" = "$GITHUB_REF_NAME"
 
       - name: Build release archive
-        shell: zsh
+        shell: bash
         run: |
           ./Scripts/test-core.sh
           ./Scripts/package-release.sh
@@ -30,11 +30,11 @@ jobs:
       - name: Generate signed Sparkle appcast
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-        shell: zsh
+        shell: bash
         run: |
           version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
           cp RELEASE_NOTES.md "release/Whisp-$version.md"
-          print -rn -- "$SPARKLE_PRIVATE_KEY" | \
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | \
             .build/artifacts/sparkle/Sparkle/bin/generate_appcast \
               --ed-key-file - \
               --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/" \
@@ -45,7 +45,7 @@ jobs:
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: zsh
+        shell: bash
         run: |
           version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
           cp "release/Whisp-$version.zip" release/Whisp.zip
