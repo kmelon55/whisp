@@ -33,7 +33,7 @@ Whisp는 작고 오픈 소스인 macOS 받아쓰기 앱입니다. Control 키를
 2. **Whisp**를 **Applications** 폴더로 드래그합니다.
 3. Whisp를 실행하고 사용하는 기능에 필요한 권한을 허용합니다.
 
-현재 공개 버전인 `v0.3.1`은 임시 서명되어 있으며 Apple Developer ID 공증을 받지 않았습니다. 따라서 macOS가 첫 실행을 차단할 수 있습니다. 이후 태그 릴리스는 Developer ID 서명과 Apple 공증을 통과해야만 게시되도록 구성되어 있습니다.
+현재 공개 버전인 `v0.3.2`는 임시 서명되어 있으며 Apple Developer ID 공증을 받지 않았습니다. 따라서 macOS가 첫 실행을 차단할 수 있습니다. 릴리스 파일에는 Sparkle EdDSA 서명이 포함되므로 기존 설치본은 앱 안에서 업데이트 파일을 검증하고 설치할 수 있습니다.
 
 macOS가 현재 버전의 실행을 차단하면 다음 순서로 여세요.
 
@@ -131,7 +131,7 @@ open dist/Whisp.app
 ./Scripts/package-release.sh
 ```
 
-로컬 앱 번들은 임시 서명됩니다. GitHub 태그 릴리스는 Developer ID 서명, Apple 공증, 스테이플을 필수로 수행하고 `appcast.xml`에 Sparkle EdDSA 서명도 포함합니다. 자세한 내용은 [릴리스 가이드](docs/RELEASING.md)를 참고하세요.
+로컬 앱 번들은 임시 서명됩니다. GitHub 태그 릴리스는 항상 `appcast.xml`에 Sparkle EdDSA 서명을 포함하며, Apple 인증 정보가 설정된 경우에는 Developer ID 서명, Apple 공증, 스테이플도 수행합니다. 자세한 내용은 [릴리스 가이드](docs/RELEASING.md)를 참고하세요.
 
 ## 테스트
 

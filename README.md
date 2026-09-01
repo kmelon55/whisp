@@ -33,7 +33,7 @@ It is designed as a focused mac dictation app: one global shortcut, a compact li
 2. Drag **Whisp** into **Applications**.
 3. Launch Whisp and grant the permissions required by the features you use.
 
-The current public build (`v0.3.1`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Future tagged releases are configured to require Developer ID signing and Apple notarization before publication.
+The current public build (`v0.3.2`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Release archives are still signed with Sparkle EdDSA so existing installations can verify and install in-app updates.
 
 If macOS blocks this version:
 
@@ -131,7 +131,7 @@ To create the distributable DMG:
 ./Scripts/package-release.sh
 ```
 
-The local app bundle is ad-hoc signed. Tagged GitHub releases require Developer ID signing, Apple notarization, and stapling, and additionally include a Sparkle EdDSA signature in `appcast.xml`. See [Release Guide](docs/RELEASING.md).
+The local app bundle is ad-hoc signed. Tagged GitHub releases always include a Sparkle EdDSA signature in `appcast.xml`; when Apple credentials are configured, they additionally require Developer ID signing, notarization, and stapling. See [Release Guide](docs/RELEASING.md).
 
 ## Project structure
 
