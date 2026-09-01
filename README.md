@@ -35,6 +35,15 @@ It is designed as a focused mac dictation app: one global shortcut, a compact li
 
 The current public build (`v0.3.1`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Future tagged releases are configured to require Developer ID signing and Apple notarization before publication.
 
+If macOS blocks this version:
+
+1. Try to open Whisp once and dismiss the warning.
+2. Open **System Settings → Privacy & Security**.
+3. Scroll down to **Security** and click **Open Anyway** next to the Whisp message.
+4. Authenticate if prompted, then confirm **Open**.
+
+Use this System Settings flow rather than Control-clicking or right-clicking the app.
+
 After installing this release, Whisp can check for future versions automatically. You can also choose **Check for Updates…** from its menu bar menu.
 
 ## Requirements

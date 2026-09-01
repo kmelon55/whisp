@@ -31,6 +31,8 @@ ln -s /Applications "$STAGING_DIR/Applications"
 mkdir -p "$STAGING_DIR/.background"
 sips -s format png "$BACKGROUND_SVG" \
   --out "$STAGING_DIR/.background/background.png" >/dev/null
+sips -s dpiWidth 144 -s dpiHeight 144 \
+  "$STAGING_DIR/.background/background.png" >/dev/null
 
 hdiutil create \
   -volname "Whisp" \
@@ -57,14 +59,14 @@ with timeout of 30 seconds
       set toolbar visible of container window to false
       set statusbar visible of container window to false
       set pathbar visible of container window to false
-      set bounds of container window to {100, 100, 760, 520}
+      set bounds of container window to {200, 120, 800, 520}
       set viewOptions to icon view options of container window
       set arrangement of viewOptions to not arranged
-      set icon size of viewOptions to 104
+      set icon size of viewOptions to 100
       set text size of viewOptions to 13
       set background picture of viewOptions to file ".background:background.png"
-      set position of item "Whisp.app" to {185, 225}
-      set position of item "Applications" to {475, 225}
+      set position of item "Whisp.app" to {175, 190}
+      set position of item "Applications" to {425, 190}
       delay 2
       close
     end tell

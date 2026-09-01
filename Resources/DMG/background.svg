@@ -1,34 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="660" height="420" viewBox="0 0 660 420">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
   <defs>
-    <linearGradient id="background" x1="45" y1="10" x2="615" y2="420" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1B2030"/>
-      <stop offset="0.54" stop-color="#0D1019"/>
-      <stop offset="1" stop-color="#07080D"/>
+    <linearGradient id="background" x1="70" y1="20" x2="1130" y2="790" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A2233"/>
+      <stop offset="0.5" stop-color="#0D111B"/>
+      <stop offset="1" stop-color="#08090F"/>
     </linearGradient>
-    <radialGradient id="blueGlow" cx="0" cy="0" r="1" gradientTransform="translate(151 151) rotate(35) scale(310 220)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4ED9FF" stop-opacity="0.19"/>
-      <stop offset="1" stop-color="#4ED9FF" stop-opacity="0"/>
+    <radialGradient id="leftGlow" cx="0" cy="0" r="1" gradientTransform="translate(300 315) rotate(38) scale(520 390)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4BDFFF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#4BDFFF" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="pinkGlow" cx="0" cy="0" r="1" gradientTransform="translate(558 358) rotate(-140) scale(300 210)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#CF76FF" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#CF76FF" stop-opacity="0"/>
+    <radialGradient id="rightGlow" cx="0" cy="0" r="1" gradientTransform="translate(965 575) rotate(-145) scale(500 360)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D27CFF" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#D27CFF" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="arrow" x1="276" y1="250" x2="384" y2="250" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#73E4FF"/>
-      <stop offset="1" stop-color="#D49AFF"/>
+    <linearGradient id="arrow" x1="490" y1="380" x2="710" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6CE8FF"/>
+      <stop offset="1" stop-color="#DA93FF"/>
     </linearGradient>
+    <linearGradient id="glass" x1="468" y1="313" x2="732" y2="447" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.11"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.035"/>
+    </linearGradient>
+    <filter id="arrowGlow" x="440" y="270" width="320" height="220" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
   </defs>
 
-  <rect width="660" height="420" fill="url(#background)"/>
-  <rect width="660" height="420" fill="url(#blueGlow)"/>
-  <rect width="660" height="420" fill="url(#pinkGlow)"/>
-  <path d="M1 1H659V419H1V1Z" fill="none" stroke="#fff" stroke-opacity="0.08" stroke-width="2"/>
+  <rect width="1200" height="800" fill="url(#background)"/>
+  <rect width="1200" height="800" fill="url(#leftGlow)"/>
+  <rect width="1200" height="800" fill="url(#rightGlow)"/>
+  <path d="M1 1H1199V799H1V1Z" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2"/>
 
-  <text x="330" y="59" text-anchor="middle" fill="#F7F8FF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="30" font-weight="650">Whisp</text>
-  <text x="330" y="88" text-anchor="middle" fill="#C7CBDA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Drag Whisp to Applications</text>
+  <text x="600" y="90" text-anchor="middle" fill="#F8F9FF" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="48" font-weight="680">Install Whisp</text>
+  <text x="600" y="133" text-anchor="middle" fill="#C5CAD9" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24">Drag Whisp into the Applications folder</text>
 
-  <path d="M278 224H374" stroke="url(#arrow)" stroke-width="4" stroke-linecap="round"/>
-  <path d="M360 211L376 224L360 237" fill="none" stroke="#D49AFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Actual Finder icons sit at (350, 380) and (850, 380). Keep both 200px icon areas clear. -->
+  <circle cx="350" cy="380" r="130" fill="none" stroke="#72E5FF" stroke-opacity="0.13" stroke-width="2"/>
+  <circle cx="850" cy="380" r="130" fill="none" stroke="#D397FF" stroke-opacity="0.13" stroke-width="2"/>
 
-  <text x="330" y="384" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.4" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Double-tap Control. Speak. Done.</text>
+  <rect x="468" y="313" width="264" height="134" rx="67" fill="url(#glass)" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
+  <path d="M500 380H692M655 343L697 380L655 417" fill="none" stroke="url(#arrow)" stroke-opacity="0.45" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" filter="url(#arrowGlow)"/>
+  <path d="M500 380H692M655 343L697 380L655 417" fill="none" stroke="url(#arrow)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="600" y="500" text-anchor="middle" fill="#DCE0EC" fill-opacity="0.72" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="600" letter-spacing="3">DRAG TO INSTALL</text>
+  <path d="M270 600H930" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="2"/>
+  <text x="600" y="660" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.52" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20">Then open Whisp from your Applications folder</text>
+  <text x="600" y="708" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.28" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16">Double-tap Control · Speak · Done</text>
 </svg>
