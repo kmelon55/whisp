@@ -22,6 +22,32 @@ expect(
 expect(AppLanguage.korean.text("일반", "General") == "일반", "한국어 UI 선택")
 expect(AppLanguage.english.text("일반", "General") == "General", "영어 UI 선택")
 expect(RemoteProvider.custom.title(.english) == "Custom", "provider 이름 현지화")
+let catalogModelWithoutTags = try! JSONDecoder().decode(
+    VercelTranscriptionModel.self,
+    from: Data(#"{"id":"test/stt","name":"STT","description":"Test","type":"transcription","owned_by":"test","supported_specifications":["v4"],"pricing":{}}"#.utf8)
+)
+expect(catalogModelWithoutTags.tags.isEmpty, "catalog model decodes without tags")
+expect(VercelModelCatalog.fallbackModels.count == 9, "Vercel STT fallback catalog")
+expect(
+    VercelModelCatalog.fallbackModels.first { $0.id == "openai/gpt-4o-mini-transcribe" }?
+        .priceText(.english) == "Audio $1.25/M · output $5/M",
+    "token price formatting"
+)
+expect(
+    VercelModelCatalog.fallbackModels.first { $0.id == "spacexai/grok-stt" }?
+        .priceText(.korean) == "$0.10/시간",
+    "duration price formatting"
+)
+expect(
+    VercelModelCatalog.fallbackModels.first { $0.id == "fish-audio/transcribe-1-free" }?
+        .priceText(.korean) == "무료",
+    "free price formatting"
+)
+expect(
+    VercelModelCatalog.fallbackModels.first { $0.id == "openai/gpt-realtime-whisper" }?
+        .isBatchCompatible == false,
+    "realtime-only model is not selectable"
+)
 expect(
     AppLanguage.english.localizeError("마이크 녹음을 시작하지 못했습니다.")
         == "Could not start microphone recording.",

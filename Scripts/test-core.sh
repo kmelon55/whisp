@@ -11,6 +11,7 @@ swiftc \
   "$PROJECT_DIR/Sources/Whisp/Core/Localization.swift" \
   "$PROJECT_DIR/Sources/Whisp/Core/AppSettings.swift" \
   "$PROJECT_DIR/Sources/Whisp/Core/KeychainStore.swift" \
+  "$PROJECT_DIR/Sources/Whisp/Services/VercelModelCatalog.swift" \
   "$PROJECT_DIR/Sources/Whisp/Services/VercelGatewayService.swift" \
   "$PROJECT_DIR/Sources/Whisp/Services/RemoteTranscriptionService.swift" \
   "$PROJECT_DIR/Tests/CoreSmoke/main.swift" \

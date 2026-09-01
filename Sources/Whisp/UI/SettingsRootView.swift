@@ -242,6 +242,7 @@ private struct ModelSettingsView: View {
     @State private var apiKeyDrafts: [RemoteProvider: String] = [:]
     @State private var loadedAPIKeyProviders: Set<RemoteProvider> = []
     @State private var apiKeySaveMessage: String?
+    @StateObject private var vercelCatalog = VercelModelCatalog()
 
     var body: some View {
         SettingsPage(
@@ -289,7 +290,10 @@ private struct ModelSettingsView: View {
                 ))
                     .font(.caption)
                     .foregroundStyle(apiKeySaveMessage == language.text("저장하지 못했어요", "Could not save") ? Color.red : Color.secondary)
-                if settings.remoteProvider != .xAI {
+                if settings.remoteProvider == .vercel {
+                    Divider()
+                    VercelModelPicker(catalog: vercelCatalog)
+                } else if settings.remoteProvider != .xAI {
                     LabeledContent(language.text("전사 모델", "Transcription model")) {
                         TextField("model id", text: modelBinding)
                             .textFieldStyle(.roundedBorder)
@@ -356,6 +360,10 @@ private struct ModelSettingsView: View {
             apiKeySaveMessage = nil
             loadAPIKeyIfNeeded(for: provider)
         }
+        .task(id: settings.remoteProvider) {
+            guard settings.remoteProvider == .vercel else { return }
+            await vercelCatalog.refreshIfNeeded()
+        }
     }
 
     private var apiKeyBinding: Binding<String> {
@@ -399,6 +407,149 @@ private struct ModelSettingsView: View {
             get: { settings.baseURL(for: settings.remoteProvider) },
             set: { settings.setBaseURL($0, for: settings.remoteProvider) }
         )
+    }
+}
+
+private struct VercelModelPicker: View {
+    @EnvironmentObject private var settings: AppSettings
+    @Environment(\.appLanguage) private var language
+    @ObservedObject var catalog: VercelModelCatalog
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(language.text("Vercel STT 모델", "Vercel STT models"))
+                        .font(.headline)
+                    Text(language.text(
+                        "USD 기준 · 시간은 오디오 1시간, M은 토큰 100만 개 가격입니다. Vercel 공개 카탈로그에서 자동 갱신됩니다.",
+                        "USD · hr means one audio hour and M means one million tokens. Prices refresh from Vercel's public catalog."
+                    ))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if catalog.isRefreshing {
+                    ProgressView().controlSize(.small)
+                }
+            }
+
+            ForEach(catalog.models) { model in
+                VercelModelChoice(
+                    model: model,
+                    selected: settings.model(for: .vercel) == model.id
+                ) {
+                    settings.setModel(model.id, for: .vercel)
+                }
+            }
+
+            if catalog.refreshFailed {
+                Label(
+                    language.text(
+                        "최신 목록을 불러오지 못해 내장된 가격표를 보여주고 있습니다.",
+                        "Showing the built-in price list because the latest catalog could not be loaded."
+                    ),
+                    systemImage: "wifi.exclamationmark"
+                )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            DisclosureGroup(language.text("목록에 없는 모델 ID 직접 입력", "Enter a model ID manually")) {
+                TextField("creator/model-id", text: modelBinding)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.top, 6)
+            }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var modelBinding: Binding<String> {
+        Binding(
+            get: { settings.model(for: .vercel) },
+            set: { settings.setModel($0, for: .vercel) }
+        )
+    }
+}
+
+private struct VercelModelChoice: View {
+    @Environment(\.appLanguage) private var language
+    let model: VercelTranscriptionModel
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 11) {
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.55))
+                    .padding(.top, 2)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text(model.name).fontWeight(.semibold)
+                        if model.id == RemoteProvider.vercel.defaultModel {
+                            ModelBadge(language.text("추천", "Recommended"), color: .accentColor)
+                        }
+                        if !model.isBatchCompatible {
+                            ModelBadge(language.text("실시간 전용", "Realtime only"), color: .orange)
+                        }
+                    }
+                    Text(model.summary(language))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(model.id)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(.tertiary)
+                }
+
+                Spacer(minLength: 8)
+
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text(model.priceText(language))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(model.isFree ? Color.green : Color.primary)
+                    Text(model.providerName(language))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .padding(11)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                selected ? Color.accentColor.opacity(0.1) : Color.primary.opacity(0.025),
+                in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(selected ? Color.accentColor.opacity(0.45) : Color.primary.opacity(0.07))
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(!model.isBatchCompatible)
+        .opacity(model.isBatchCompatible ? 1 : 0.58)
+    }
+}
+
+private struct ModelBadge: View {
+    let text: String
+    let color: Color
+
+    init(_ text: String, color: Color) {
+        self.text = text
+        self.color = color
+    }
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 9, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12), in: Capsule())
     }
 }
 
