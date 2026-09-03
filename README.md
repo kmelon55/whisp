@@ -2,12 +2,16 @@
 
 [English](README.md) | [한국어](README.ko.md)
 
+<p align="center">
+  <img src="Resources/AppIcon.svg" alt="Whisp app icon" width="132" />
+</p>
+
 Whisp is a small, open-source macOS dictation app. Double-tap Control, speak, and double-tap Control again to type the transcript into the field you were using.
 
 It is designed as a focused mac dictation app: one global shortcut, a compact live waveform, remote or fully local speech-to-text, and no transcript history.
 
 <p align="center">
-  <img src="Resources/Screenshots/whisp-settings.png" alt="Whisp settings" width="820" />
+  <img src="Resources/Screenshots/whisp-waveform.gif" alt="Whisp recording and transcription waveform" width="380" />
 </p>
 
 ## Features
@@ -21,8 +25,12 @@ It is designed as a focused mac dictation app: one global shortcut, a compact li
 - Custom vocabulary and transcription prompts
 - Korean and English interface localization
 - Direct insertion into the previously focused text field, with clipboard fallback
+- Configure or disable separate while-recording shortcuts for cancel, paste, and paste-and-Enter
+- Input-source-independent physical key labels and guarded single-modifier actions
+- A persistent loading waveform with optional shortcut hints and transcription status
+- Optional launch at login, with shortcut recovery after wake and session unlock
 - API keys stored only in macOS Keychain
-- Sparkle-signed update checks from the menu bar
+- Automatic Sparkle-signed update checks, alerts, and optional background downloads
 - No saved audio or transcript history
 
 ## Download
@@ -33,7 +41,7 @@ It is designed as a focused mac dictation app: one global shortcut, a compact li
 2. Drag **Whisp** into **Applications**.
 3. Launch Whisp and grant the permissions required by the features you use.
 
-The current public build (`v0.3.2`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Release archives are still signed with Sparkle EdDSA so existing installations can verify and install in-app updates.
+The current public build (`v0.4.0`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Release archives are still signed with Sparkle EdDSA so existing installations can verify and install in-app updates.
 
 If macOS blocks this version:
 
@@ -44,7 +52,7 @@ If macOS blocks this version:
 
 Use this System Settings flow rather than Control-clicking or right-clicking the app.
 
-After installing this release, Whisp can check for future versions automatically. You can also choose **Check for Updates…** from its menu bar menu.
+After installing this release, Whisp checks for future versions automatically and shows a signed Sparkle update alert when one is available. In **Whisp → General → Startup & Updates**, you can disable automatic checks, enable background downloads, check immediately, or launch Whisp automatically when you sign in. Whisp remains running across normal sleep and wake; it also refreshes its global shortcuts after wake or session unlock.
 
 ## Requirements
 
@@ -62,7 +70,19 @@ After installing this release, Whisp can check for future versions automatically
 4. Speak.
 5. Double-tap **Control** again to transcribe and insert the text.
 
-The shortcut can be changed or disabled in **Whisp → General**.
+The start shortcut and the separate cancel, paste, and paste-and-Enter actions can be changed or disabled in **Whisp → General**. While-recording actions may use an ordinary key combination or a guarded single press of Control, Option, Shift, or Command. Physical keys are always labeled using the US/English layout even when another input source is active.
+
+For example, keep double-Control as the start/paste shortcut and assign a single Control press to **Paste & Enter**. Whisp waits briefly to distinguish one press from a double-tap, and ignores the single-modifier action when that modifier is used with another key or a mouse click.
+
+## Startup and updates
+
+- **Launch Whisp at login** uses the macOS Login Items service and is opt-in.
+- Whisp stays active through normal sleep/wake and refreshes its global shortcut listeners after wake and session unlock.
+- Automatic update checks and update alerts are enabled by default.
+- Automatic background download is optional and can be changed independently in Settings.
+- **Check Now…** in Settings and **Check for Updates…** in the menu bar both open Sparkle's standard signed update flow.
+
+If macOS marks the login item as requiring approval, use the **Open Settings** button beside the option and allow Whisp in **System Settings → General → Login Items & Extensions**.
 
 ## Remote transcription
 

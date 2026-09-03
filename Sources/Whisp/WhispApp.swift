@@ -4,11 +4,18 @@ import SwiftUI
 @main
 struct WhispApp: App {
     @StateObject private var appState = AppState()
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
-        updaterDelegate: nil,
-        userDriverDelegate: nil
-    )
+    @StateObject private var lifecycleSettings: AppLifecycleSettings
+
+    init() {
+        let updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
+        _lifecycleSettings = StateObject(
+            wrappedValue: AppLifecycleSettings(updaterController: updaterController)
+        )
+    }
 
     var body: some Scene {
         WindowGroup("Whisp", id: "settings") {
@@ -16,11 +23,15 @@ struct WhispApp: App {
                 .environmentObject(appState)
                 .environmentObject(appState.settings)
                 .environmentObject(appState.modelManager)
+                .environmentObject(lifecycleSettings)
                 .frame(minWidth: 780, minHeight: 560)
                 .task { appState.start() }
                 .onOpenURL { url in
-                    if url.scheme == "whisp", url.host == "toggle" {
-                        appState.toggleDictation()
+                    guard url.scheme == "whisp" else { return }
+                    switch url.host {
+                    case "toggle": appState.toggleDictation()
+                    case "preview": appState.previewOverlay()
+                    default: break
                     }
                 }
         }
@@ -28,7 +39,7 @@ struct WhispApp: App {
         .windowResizability(.contentMinSize)
 
         MenuBarExtra {
-            MenuBarContentView(updaterController: updaterController)
+            MenuBarContentView(updaterController: lifecycleSettings.updaterController)
                 .environmentObject(appState)
                 .environment(\.appLanguage, appState.settings.appLanguage)
                 .environment(\.locale, appState.settings.appLanguage.locale)

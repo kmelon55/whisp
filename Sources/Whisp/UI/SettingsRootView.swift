@@ -121,7 +121,9 @@ private struct SettingCard<Content: View>: View {
 }
 
 private struct GeneralSettingsView: View {
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var settings: AppSettings
+    @EnvironmentObject private var lifecycleSettings: AppLifecycleSettings
     @Environment(\.appLanguage) private var language
 
     var body: some View {
@@ -140,6 +142,18 @@ private struct GeneralSettingsView: View {
                     .frame(width: 150)
                 }
                 Divider()
+                LabeledContent(language.text("말하는 언어", "Spoken language")) {
+                    Picker("", selection: $settings.language) {
+                        Text(language.text("자동 감지", "Auto-detect")).tag("auto")
+                        Text("한국어").tag("ko")
+                        Text("English").tag("en")
+                        Text("日本語").tag("ja")
+                        Text("中文").tag("zh")
+                    }
+                    .labelsHidden()
+                    .frame(width: 130)
+                }
+                Divider()
                 Text(language.text("전사 위치", "Transcription")).font(.headline)
                 HStack(spacing: 10) {
                     ForEach(TranscriptionMode.allCases) { mode in
@@ -149,19 +163,118 @@ private struct GeneralSettingsView: View {
             }
 
             SettingCard {
-                LabeledContent(language.text("단축키", "Shortcut")) {
-                    Picker("", selection: $settings.shortcutMode) {
-                        ForEach(ShortcutMode.allCases) { Text($0.title(language)).tag($0) }
+                Label(language.text("시작 및 업데이트", "Startup & Updates"), systemImage: "arrow.triangle.2.circlepath")
+                    .font(.headline)
+                Toggle(
+                    language.text("로그인 시 Whisp 자동 실행", "Launch Whisp at login"),
+                    isOn: Binding(
+                        get: { lifecycleSettings.launchAtLoginState.isRegistered },
+                        set: { lifecycleSettings.setLaunchAtLogin($0) }
+                    )
+                )
+                if lifecycleSettings.launchAtLoginState == .requiresApproval {
+                    HStack {
+                        Text(language.text(
+                            "macOS의 로그인 항목 승인이 필요합니다.",
+                            "Approval is required in macOS Login Items."
+                        ))
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        Spacer()
+                        Button(language.text("설정 열기", "Open Settings")) {
+                            lifecycleSettings.openLoginItemSettings()
+                        }
                     }
-                    .labelsHidden()
-                    .frame(width: 180)
+                } else if lifecycleSettings.launchAtLoginState == .unavailable {
+                    Text(language.text(
+                        "Applications 폴더에 설치한 앱에서 설정해 주세요.",
+                        "Install Whisp in Applications before enabling this option."
+                    ))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Divider()
+                Toggle(
+                    language.text(
+                        "새 버전 자동 확인 및 팝업 알림",
+                        "Automatically check and show update alerts"
+                    ),
+                    isOn: Binding(
+                        get: { lifecycleSettings.automaticallyChecksForUpdates },
+                        set: { lifecycleSettings.setAutomaticallyChecksForUpdates($0) }
+                    )
+                )
+                Toggle(
+                    language.text(
+                        "업데이트 자동 다운로드",
+                        "Automatically download updates"
+                    ),
+                    isOn: Binding(
+                        get: { lifecycleSettings.automaticallyDownloadsUpdates },
+                        set: { lifecycleSettings.setAutomaticallyDownloadsUpdates($0) }
+                    )
+                )
+                .disabled(!lifecycleSettings.automaticallyChecksForUpdates)
+                HStack {
+                    Text(language.text(
+                        "새 버전이 발견되면 Sparkle의 서명된 업데이트 창이 표시됩니다.",
+                        "A signed Sparkle update window appears when a new version is available."
+                    ))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button(language.text("지금 확인…", "Check Now…")) {
+                        lifecycleSettings.checkForUpdates()
+                    }
+                }
+                if let lastError = lifecycleSettings.lastError {
+                    Text(lastError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+
+            SettingCard {
+                Label(language.text("플로팅 파형", "Floating waveform"), systemImage: "waveform")
+                    .font(.headline)
+                Toggle(
+                    language.text("녹음 중 단축키 표시", "Show shortcuts while recording"),
+                    isOn: $settings.showRecordingShortcutHints
+                )
+                Toggle(
+                    language.text("전사 중 상태 문구 표시", "Show status text while transcribing"),
+                    isOn: $settings.showTranscriptionStatus
+                )
+                Text(language.text(
+                    "두 표시를 모두 꺼도 전사 중에는 파형이 로딩 모션으로 바뀌어 진행 상태를 알려줍니다.",
+                    "Even with both details hidden, the waveform switches to a loading motion during transcription."
+                ))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Divider()
+                LabeledContent(language.text("안전한 UI 테스트", "Safe UI test")) {
+                    Button(language.text("5초 미리보기", "Preview for 5 seconds")) {
+                        appState.previewOverlay()
+                    }
+                }
+            }
+
+            SettingCard {
+                Label(language.text("단축키", "Shortcuts"), systemImage: "keyboard")
+                    .font(.headline)
+                LabeledContent(language.text("녹음 시작", "Start recording")) {
+                    HStack {
+                        Picker("", selection: $settings.shortcutMode) {
+                            ForEach(ShortcutMode.allCases) { Text($0.title(language)).tag($0) }
+                        }
+                        .labelsHidden()
+                        .frame(width: 170)
+                        if settings.shortcutMode == .custom {
+                            ShortcutRecorderButton()
+                        }
+                    }
                 }
                 if settings.shortcutMode == .custom {
-                    HStack {
-                        Text(language.text("키 조합", "Key combination"))
-                        Spacer()
-                        ShortcutRecorderButton()
-                    }
                     Text(language.text(
                         "버튼을 누른 뒤 원하는 키 조합을 입력하세요. Control, Option, Shift, Command를 두 번 누르는 동작도 그대로 저장할 수 있습니다.",
                         "Press the button, then enter a key combination. You can also press Control, Option, Shift, or Command twice."
@@ -177,31 +290,100 @@ private struct GeneralSettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 Divider()
-                LabeledContent(language.text("말하는 언어", "Spoken language")) {
-                    Picker("", selection: $settings.language) {
-                        Text(language.text("자동 감지", "Auto-detect")).tag("auto")
-                        Text("한국어").tag("ko")
-                        Text("English").tag("en")
-                        Text("日本語").tag("ja")
-                        Text("中文").tag("zh")
-                    }
-                    .labelsHidden()
-                    .frame(width: 130)
+                Text(language.text("녹음 중 동작", "While recording"))
+                    .font(.headline)
+                ForEach(RecordingShortcutAction.allCases) { action in
+                    RecordingActionShortcutRow(action: action)
+                    if action != RecordingShortcutAction.allCases.last { Divider() }
                 }
-                Divider()
-                Toggle(
-                    language.text("완료하면 현재 앱에 바로 붙여넣기", "Paste into the current app when finished"),
-                    isOn: $settings.autoPaste
-                )
+                Text(language.text(
+                    "Control, Option, Shift, Command는 키 하나만 눌렀다 떼는 동작도 지정할 수 있습니다. 다른 키나 마우스와 함께 사용하면 실행되지 않으며, 같은 키 두 번이 시작 단축키라면 짧은 판별 후 실행됩니다.",
+                    "Control, Option, Shift, and Command can also be assigned as a single press and release. Chords and mouse gestures do not trigger it; when the same double-tap starts recording, the single action waits briefly to disambiguate."
+                ))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Text(language.text(
-                "지정한 단축키로 녹음을 시작하고, 같은 단축키를 다시 누르면 완료합니다.",
-                "Press the shortcut to start recording, then press it again to finish."
+                "녹음 중 단축키는 녹음할 때만 임시로 활성화됩니다.",
+                "While-recording shortcuts are active only while Whisp is recording."
             ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+        .onAppear { lifecycleSettings.refresh() }
+        .onReceive(NotificationCenter.default.publisher(
+            for: NSApplication.didBecomeActiveNotification
+        )) { _ in
+            lifecycleSettings.refresh()
+        }
+    }
+}
+
+private struct RecordingActionShortcutRow: View {
+    @EnvironmentObject private var settings: AppSettings
+    @Environment(\.appLanguage) private var language
+
+    let action: RecordingShortcutAction
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 5) {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(action.title(language)).fontWeight(.medium)
+                    Text(action.subtitle(language))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 12)
+                Picker("", selection: modeBinding) {
+                    ForEach(availableModes) { mode in
+                        Text(mode.title(language)).tag(mode)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: action == .paste ? 160 : 112)
+
+                if setting.mode == .custom {
+                    RecordingShortcutRecorderButton(
+                        label: setting.label.isEmpty
+                            ? language.text("키 지정", "Set key")
+                            : setting.label
+                    ) { kind, keyCode, modifiers, label in
+                        settings.setRecordingShortcut(
+                            kind: kind,
+                            keyCode: keyCode,
+                            modifiers: modifiers,
+                            label: label,
+                            for: action
+                        )
+                    }
+                }
+            }
+            if settings.hasRecordingShortcutConflict(for: action) {
+                Text(language.text(
+                    "이미 다른 동작에 사용 중인 단축키입니다.",
+                    "This shortcut is already used by another action."
+                ))
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
+    private var setting: RecordingShortcutSetting {
+        settings.recordingShortcut(for: action)
+    }
+
+    private var availableModes: [RecordingShortcutMode] {
+        action == .paste ? RecordingShortcutMode.allCases : [.custom, .disabled]
+    }
+
+    private var modeBinding: Binding<RecordingShortcutMode> {
+        Binding(
+            get: { setting.mode },
+            set: { settings.setRecordingShortcutMode($0, for: action) }
+        )
     }
 }
 

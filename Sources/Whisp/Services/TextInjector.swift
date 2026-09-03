@@ -71,6 +71,7 @@ enum TextInjector {
     static func deliver(
         _ text: String,
         paste: Bool,
+        pressEnterAfterPaste: Bool,
         target: TextInsertionTarget?
     ) async -> TextDeliveryResult {
         guard paste else {
@@ -94,12 +95,20 @@ enum TextInjector {
         // 녹음 시작 때 저장한 요소와 현재 앱이 보고하는 포커스 요소를 모두 확인합니다.
         if let element = target.focusedElement, insertDirectly(text, into: element) {
             logger.notice("Delivery inserted into captured AX element")
-            return .inserted
+            return await finishDelivery(
+                .inserted,
+                pressEnter: pressEnterAfterPaste,
+                processIdentifier: target.processIdentifier
+            )
         }
         if let element = focusedElement(for: target.processIdentifier),
            insertDirectly(text, into: element) {
             logger.notice("Delivery inserted into current AX element")
-            return .inserted
+            return await finishDelivery(
+                .inserted,
+                pressEnter: pressEnterAfterPaste,
+                processIdentifier: target.processIdentifier
+            )
         }
 
         guard let application = NSRunningApplication(processIdentifier: target.processIdentifier) else {
@@ -126,7 +135,11 @@ enum TextInjector {
             if let element = focusedElement(for: target.processIdentifier),
                insertDirectly(text, into: element) {
                 logger.notice("Delivery inserted after target activation")
-                return .inserted
+                return await finishDelivery(
+                    .inserted,
+                    pressEnter: pressEnterAfterPaste,
+                    processIdentifier: target.processIdentifier
+                )
             }
 
             // AX로는 입력 요소를 식별하지 못해도, 사용자가 둔 실제 키보드
@@ -138,12 +151,33 @@ enum TextInjector {
                 return .copied
             }
             logger.notice("Delivery sent Command-V to pid=\(target.processIdentifier, privacy: .public)")
-            return .pasted
+            return await finishDelivery(
+                .pasted,
+                pressEnter: pressEnterAfterPaste,
+                processIdentifier: target.processIdentifier
+            )
         }
 
         logger.error("Delivery copied: target application could not become frontmost")
         copy(text)
         return .copied
+    }
+
+    private static func finishDelivery(
+        _ result: TextDeliveryResult,
+        pressEnter: Bool,
+        processIdentifier: pid_t
+    ) async -> TextDeliveryResult {
+        guard pressEnter else { return result }
+
+        // 붙여넣기를 처리할 짧은 여유를 준 뒤 Enter를 보냅니다.
+        try? await Task.sleep(for: .milliseconds(80))
+        if postEnterKey(to: processIdentifier) {
+            logger.notice("Delivery sent Enter to pid=\(processIdentifier, privacy: .public)")
+        } else {
+            logger.error("Delivery could not create Enter events")
+        }
+        return result
     }
 
     private static func focusedElement(for processIdentifier: pid_t) -> AXUIElement? {
@@ -263,6 +297,17 @@ enum TextInjector {
         else { return false }
         down.flags = .maskCommand
         up.flags = .maskCommand
+        down.postToPid(processIdentifier)
+        up.postToPid(processIdentifier)
+        return true
+    }
+
+    private static func postEnterKey(to processIdentifier: pid_t) -> Bool {
+        guard
+            let source = CGEventSource(stateID: .combinedSessionState),
+            let down = CGEvent(keyboardEventSource: source, virtualKey: 36, keyDown: true),
+            let up = CGEvent(keyboardEventSource: source, virtualKey: 36, keyDown: false)
+        else { return false }
         down.postToPid(processIdentifier)
         up.postToPid(processIdentifier)
         return true

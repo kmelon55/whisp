@@ -1,4 +1,5 @@
 import Darwin
+import Carbon.HIToolbox
 import Foundation
 
 func expect(_ condition: @autoclosure () -> Bool, _ message: String) {
@@ -53,6 +54,15 @@ expect(
         == "Could not start microphone recording.",
     "런타임 오류 현지화"
 )
+expect(
+    ShortcutLabelFormatter.label(keyCode: 37, modifiers: UInt32(controlKey)) == "⌃L",
+    "입력기와 무관한 물리 키 영문 라벨"
+)
+let legacyRecordingShortcut = try! JSONDecoder().decode(
+    RecordingShortcutSetting.self,
+    from: Data(#"{"mode":"custom","keyCode":37,"modifiers":4096,"label":"⌃ㄹ"}"#.utf8)
+)
+expect(legacyRecordingShortcut.kind == .keyCombination, "이전 녹음 단축키 형식 호환")
 
 MainActor.assumeIsolated {
     let shortcutDefaultsName = "Whisp.CoreSmoke.ShortcutDefaults"
@@ -67,6 +77,33 @@ MainActor.assumeIsolated {
     expect(shortcutIsEnabled, "기본 단축키 활성화")
     expect(shortcutIsDoubleControl, "Control 두 번 기본값")
     expect(shortcutLabelIsControl, "Control 두 번 기본 라벨")
+    expect(defaultSettings.recordingCancelShortcut == .cancelDefault, "녹음 중 취소는 Esc 기본값")
+    expect(defaultSettings.recordingPasteShortcut == .pasteDefault, "붙여넣기는 녹음 시작 단축키 기본값")
+    expect(
+        defaultSettings.recordingPasteAndEnterShortcut == .pasteAndEnterDefault,
+        "붙여넣고 Enter는 Return 기본값"
+    )
+    expect(defaultSettings.showRecordingShortcutHints, "녹음 중 단축키 표시 기본값")
+    expect(defaultSettings.showTranscriptionStatus, "전사 중 상태 문구 표시 기본값")
+    defaultSettings.setRecordingShortcut(
+        kind: .singleControl,
+        keyCode: 0,
+        modifiers: 0,
+        label: "⌃",
+        for: .cancel
+    )
+    let reloadedSettings = AppSettings(defaults: shortcutDefaults)
+    expect(reloadedSettings.recordingCancelShortcut.kind == .singleControl, "단독 Control 설정 저장")
+    expect(reloadedSettings.recordingCancelShortcut.label == "⌃", "단독 Control 라벨 저장")
+    reloadedSettings.setRecordingShortcut(
+        kind: .singleControl,
+        keyCode: 0,
+        modifiers: 0,
+        label: "⌃",
+        for: .pasteAndEnter
+    )
+    expect(reloadedSettings.hasRecordingShortcutConflict(for: .cancel), "단독 보조 키 중복 감지")
+    expect(reloadedSettings.hasRecordingShortcutConflict(for: .pasteAndEnter), "반대쪽 중복도 감지")
     shortcutDefaults.removePersistentDomain(forName: shortcutDefaultsName)
 }
 

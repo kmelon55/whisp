@@ -38,13 +38,106 @@ struct DictationOverlayView: View {
             .padding(.horizontal, 16)
             .frame(width: 330, height: 58)
         } else {
-            WaveformView(
-                amplitude: appState.amplitude,
-                isRecording: appState.phase == .recording
-            )
-            .frame(width: 116, height: 25)
-            .padding(.horizontal, 24)
-            .frame(width: 164, height: 50)
+            switch displayedPhase {
+            case .recording:
+                if appState.settings.showRecordingShortcutHints {
+                    HStack(spacing: 12) {
+                        WaveformView(amplitude: appState.amplitude, phase: displayedPhase)
+                            .frame(width: 96, height: 25)
+                        Divider().frame(height: 20).opacity(0.45)
+                        ForEach(recordingHints) { hint in
+                            RecordingKeyHint(key: hint.key, label: hint.label)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(width: recordingContentWidth, height: 50)
+                } else {
+                    WaveformView(amplitude: appState.amplitude, phase: displayedPhase)
+                        .frame(width: 116, height: 25)
+                        .padding(.horizontal, 24)
+                        .frame(width: 164, height: 50)
+                }
+            case .transcribing:
+                if appState.settings.showTranscriptionStatus {
+                    HStack(spacing: 12) {
+                        WaveformView(amplitude: 0, phase: displayedPhase)
+                            .frame(width: 72, height: 23)
+                        Text(displayedPhase.title(appLanguage) + "…")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 20)
+                    .frame(width: 220, height: 50)
+                } else {
+                    WaveformView(amplitude: 0, phase: displayedPhase)
+                        .frame(width: 116, height: 25)
+                        .padding(.horizontal, 24)
+                        .frame(width: 164, height: 50)
+                }
+            default:
+                WaveformView(amplitude: appState.amplitude, phase: displayedPhase)
+                    .frame(width: 116, height: 25)
+                    .padding(.horizontal, 24)
+                    .frame(width: 164, height: 50)
+            }
+        }
+    }
+
+    @Environment(\.appLanguage) private var appLanguage
+
+    private var displayedPhase: DictationPhase {
+        appState.overlayPreviewPhase ?? appState.phase
+    }
+
+    private var recordingHints: [RecordingOverlayHint] {
+        RecordingShortcutAction.allCases.compactMap { action in
+            guard !appState.settings.hasRecordingShortcutConflict(for: action),
+                  let key = appState.settings.effectiveRecordingShortcutLabel(for: action)
+            else {
+                return nil
+            }
+            let label: String
+            switch action {
+            case .cancel: label = appLanguage.text("취소", "Cancel")
+            case .paste: label = appLanguage.text("붙여넣기", "Paste")
+            case .pasteAndEnter: label = appLanguage.text("전송", "Send")
+            }
+            return RecordingOverlayHint(action: action, key: key, label: label)
+        }
+    }
+
+    private var recordingContentWidth: CGFloat {
+        min(440, 150 + CGFloat(recordingHints.count) * 90)
+    }
+}
+
+private struct RecordingOverlayHint: Identifiable {
+    let action: RecordingShortcutAction
+    let key: String
+    let label: String
+
+    var id: RecordingShortcutAction { action }
+}
+
+private struct RecordingKeyHint: View {
+    let key: String
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text(key)
+                .font(.system(size: key.count > 1 ? 9 : 13, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+                .padding(.horizontal, key.count > 1 ? 5 : 6)
+                .frame(height: 20)
+                .background(.primary.opacity(0.075), in: RoundedRectangle(cornerRadius: 5))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(.primary.opacity(0.12), lineWidth: 0.5)
+                }
+            Text(label)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.secondary)
         }
     }
 }
@@ -169,7 +262,7 @@ private extension DictationPhase {
 
 private struct WaveformView: View {
     let amplitude: Double
-    let isRecording: Bool
+    let phase: DictationPhase
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1 / 45)) { context in
@@ -181,10 +274,13 @@ private struct WaveformView: View {
                 // 실제 마이크 레벨은 낮은 구간에 오래 머무르므로 완만한 곡선으로
                 // 중간 음량을 끌어올려 말할 때 높이 변화가 눈에 보이게 합니다.
                 let responsiveAmplitude = pow(max(0, amplitude), 0.72)
+                let isRecording = phase == .recording
+                let isTranscribing = phase == .transcribing
+                let loadingPulse = (sin(time * 3.8) + 1) / 2
                 let energy = isRecording
                     ? min(0.90, max(0.13, responsiveAmplitude * 1.35))
-                    : 0.035
-                let speed = isRecording ? 6.2 : 2.1
+                    : isTranscribing ? 0.34 + loadingPulse * 0.10 : 0.035
+                let speed = isRecording ? 6.2 : isTranscribing ? 5.2 : 2.1
 
                 for index in 0..<bars {
                     let x = CGFloat(index) * (width + spacing)
@@ -193,21 +289,23 @@ private struct WaveformView: View {
                     let primary = (sin(Double(index) * 0.76 + time * speed) + 1) / 2
                     let secondary = (sin(Double(index) * 0.31 - time * speed * 0.58) + 1) / 2
                     let motion = 0.50 + primary * 0.36 + secondary * 0.14
-                    let activeHeight = size.height * CGFloat(0.10 + energy * 0.86)
+                    let loadingSweep = (sin(Double(index) * 0.56 - time * 5.4) + 1) / 2
+                    let barEnergy = isTranscribing ? 0.13 + loadingSweep * 0.62 : energy
+                    let activeHeight = size.height * CGFloat(0.10 + barEnergy * 0.86)
                     let height = max(isRecording ? 3.8 : 2.6, activeHeight * CGFloat(envelope * motion))
                     let rect = CGRect(x: x, y: (size.height - height) / 2, width: max(2, width), height: height)
                     canvas.fill(
                         Path(roundedRect: rect, cornerRadius: width / 2),
-                        with: .color(.primary.opacity(isRecording ? 0.92 : 0.38))
+                        with: .color(isTranscribing
+                            ? Color.accentColor.opacity(0.76)
+                            : Color.primary.opacity(isRecording ? 0.92 : 0.38))
                     )
                 }
             }
         }
         .animation(.smooth(duration: 0.16), value: amplitude)
-        .animation(.easeOut(duration: 0.22), value: isRecording)
-        .accessibilityLabel(isRecording
-            ? appLanguage.text("녹음 중", "Recording")
-            : appLanguage.text("마이크 준비 중", "Preparing microphone"))
+        .animation(.easeOut(duration: 0.22), value: phase)
+        .accessibilityLabel(phase.title(appLanguage))
     }
 
     @Environment(\.appLanguage) private var appLanguage

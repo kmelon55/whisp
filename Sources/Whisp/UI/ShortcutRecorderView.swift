@@ -11,7 +11,7 @@ struct ShortcutRecorderButton: View {
         Button(capture.isCapturing
             ? language.text("키 조합을 누르세요…", "Press a key combination…")
             : settings.customShortcutLabel) {
-            capture.start { keyCode, modifiers, label in
+            capture.startPrimary { keyCode, modifiers, label in
                 settings.setCustomShortcut(keyCode: keyCode, modifiers: modifiers, label: label)
             } onDoubleModifier: { kind, label in
                 settings.setDoubleModifierShortcut(kind: kind, label: label)
@@ -26,16 +26,74 @@ struct ShortcutRecorderButton: View {
     }
 }
 
+struct RecordingShortcutRecorderButton: View {
+    @Environment(\.appLanguage) private var language
+    @StateObject private var capture = ShortcutCapture()
+
+    let label: String
+    let onCapture: (RecordingShortcutKind, UInt32, UInt32, String) -> Void
+
+    var body: some View {
+        Button(capture.isCapturing
+            ? language.text("키를 누르세요…", "Press a key…")
+            : label) {
+            capture.startRecordingShortcut(onCapture: onCapture)
+        }
+        .buttonStyle(.bordered)
+        .tint(capture.isCapturing ? .accentColor : nil)
+        .onDisappear { capture.stop() }
+    }
+}
+
 @MainActor
 private final class ShortcutCapture: ObservableObject {
     @Published var isCapturing = false
     private var monitor: Any?
     private var doubleTapDetector = ModifierDoubleTapDetector()
     private var candidateDoubleModifier: CustomShortcutKind?
+    private var candidateSingleModifier: RecordingShortcutKind?
 
-    func start(
+    func startPrimary(
         onCapture: @escaping (UInt32, UInt32, String) -> Void,
         onDoubleModifier: @escaping (CustomShortcutKind, String) -> Void
+    ) {
+        start(
+            allowsUnmodifiedKey: false,
+            capturesEscape: false,
+            allowsDoubleModifier: true,
+            allowsSingleModifier: false,
+            onCapture: onCapture,
+            onDoubleModifier: onDoubleModifier,
+            onSingleModifier: { _, _ in }
+        )
+    }
+
+    func startRecordingShortcut(
+        onCapture: @escaping (RecordingShortcutKind, UInt32, UInt32, String) -> Void
+    ) {
+        start(
+            allowsUnmodifiedKey: true,
+            capturesEscape: true,
+            allowsDoubleModifier: false,
+            allowsSingleModifier: true,
+            onCapture: { keyCode, modifiers, label in
+                onCapture(.keyCombination, keyCode, modifiers, label)
+            },
+            onDoubleModifier: { _, _ in },
+            onSingleModifier: { kind, label in
+                onCapture(kind, 0, 0, label)
+            }
+        )
+    }
+
+    private func start(
+        allowsUnmodifiedKey: Bool,
+        capturesEscape: Bool,
+        allowsDoubleModifier: Bool,
+        allowsSingleModifier: Bool,
+        onCapture: @escaping (UInt32, UInt32, String) -> Void,
+        onDoubleModifier: @escaping (CustomShortcutKind, String) -> Void,
+        onSingleModifier: @escaping (RecordingShortcutKind, String) -> Void
     ) {
         stop()
         isCapturing = true
@@ -43,6 +101,30 @@ private final class ShortcutCapture: ObservableObject {
             guard let self else { return event }
 
             if event.type == .flagsChanged {
+                if allowsSingleModifier {
+                    guard let kind = Self.singleModifierKind(for: event.keyCode),
+                          let targetFlag = Self.modifierFlag(for: kind)
+                    else {
+                        self.candidateSingleModifier = nil
+                        return event
+                    }
+
+                    let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+                    let allModifiers: NSEvent.ModifierFlags = [.control, .option, .shift, .command]
+                    let otherModifiers = flags.intersection(allModifiers.subtracting(targetFlag))
+                    if flags.contains(targetFlag) {
+                        self.candidateSingleModifier = otherModifiers.isEmpty ? kind : nil
+                    } else if self.candidateSingleModifier == kind {
+                        self.stop()
+                        onSingleModifier(kind, ShortcutLabelFormatter.label(for: kind))
+                    }
+                    return event
+                }
+
+                guard allowsDoubleModifier else {
+                    self.resetDoubleModifierCapture()
+                    return event
+                }
                 guard let kind = Self.doubleModifierKind(for: event.keyCode),
                       let targetFlag = Self.modifierFlag(for: kind)
                 else {
@@ -71,7 +153,7 @@ private final class ShortcutCapture: ObservableObject {
                 return event
             }
 
-            if event.keyCode == 53 {
+            if event.keyCode == 53, !capturesEscape {
                 self.stop()
                 return nil
             }
@@ -80,7 +162,7 @@ private final class ShortcutCapture: ObservableObject {
 
             let modifiers = Self.carbonModifiers(from: event.modifierFlags)
             let isFunctionKey = (96...122).contains(event.keyCode)
-            guard modifiers != 0 || isFunctionKey else {
+            guard allowsUnmodifiedKey || modifiers != 0 || isFunctionKey else {
                 NSSound.beep()
                 return nil
             }
@@ -99,6 +181,7 @@ private final class ShortcutCapture: ObservableObject {
         }
         isCapturing = false
         resetDoubleModifierCapture()
+        candidateSingleModifier = nil
     }
 
     private func resetDoubleModifierCapture() {
@@ -122,6 +205,26 @@ private final class ShortcutCapture: ObservableObject {
         case .doubleOption: return .option
         case .doubleShift: return .shift
         case .doubleCommand: return .command
+        case .keyCombination: return nil
+        }
+    }
+
+    private static func singleModifierKind(for keyCode: UInt16) -> RecordingShortcutKind? {
+        switch keyCode {
+        case 59, 62: return .singleControl
+        case 58, 61: return .singleOption
+        case 56, 60: return .singleShift
+        case 55, 54: return .singleCommand
+        default: return nil
+        }
+    }
+
+    private static func modifierFlag(for kind: RecordingShortcutKind) -> NSEvent.ModifierFlags? {
+        switch kind {
+        case .singleControl: return .control
+        case .singleOption: return .option
+        case .singleShift: return .shift
+        case .singleCommand: return .command
         case .keyCombination: return nil
         }
     }
@@ -156,23 +259,8 @@ private final class ShortcutCapture: ObservableObject {
     }
 
     private static func keyLabel(_ event: NSEvent) -> String {
-        switch event.keyCode {
-        case 36: return "Return"
-        case 48: return "Tab"
-        case 49: return "Space"
-        case 51: return "Delete"
-        case 53: return "Esc"
-        case 115: return "Home"
-        case 116: return "Page Up"
-        case 117: return "Forward Delete"
-        case 119: return "End"
-        case 121: return "Page Down"
-        case 123: return "←"
-        case 124: return "→"
-        case 125: return "↓"
-        case 126: return "↑"
-        default:
-            return event.charactersIgnoringModifiers?.uppercased() ?? "Key \(event.keyCode)"
-        }
+        ShortcutLabelFormatter.keyLabel(keyCode: event.keyCode)
+            ?? event.charactersIgnoringModifiers?.uppercased()
+            ?? "Key \(event.keyCode)"
     }
 }

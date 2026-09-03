@@ -33,7 +33,7 @@ base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy
 2. Update `RELEASE_NOTES.md`.
 3. Run `swift build` and `./Scripts/test-core.sh`.
 4. Commit and push the changes.
-5. Push the matching tag, for example `v0.3.2`.
+5. Push the matching tag, for example `v0.4.0`.
 6. Confirm that GitHub Actions generated the signed Sparkle appcast and published the release. When Apple credentials are configured, also confirm Developer ID signing, notarization, stapling, and Gatekeeper validation.
 
 The appcast must be generated after stapling because stapling changes the DMG bytes that Sparkle signs.

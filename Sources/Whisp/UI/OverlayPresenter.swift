@@ -68,7 +68,17 @@ final class OverlayPresenter {
 
     func show() {
         guard let appState else { return }
-        configureSurface(contentSize: NSSize(width: 164, height: 50))
+        let contentWidth: CGFloat
+        switch appState.overlayPreviewPhase ?? appState.phase {
+        case .recording:
+            contentWidth = appState.settings.showRecordingShortcutHints
+                ? min(440, 150 + CGFloat(appState.settings.enabledRecordingShortcutCount) * 90)
+                : 164
+        case .transcribing:
+            contentWidth = appState.settings.showTranscriptionStatus ? 220 : 164
+        default: contentWidth = 164
+        }
+        configureSurface(contentSize: NSSize(width: contentWidth, height: 50))
         hosting.rootView = AnyView(
             DictationOverlayView(message: nil, usesNativeGlass: nativeGlassView != nil)
                 .environmentObject(appState)
