@@ -11,7 +11,7 @@ Whisp is a small, open-source macOS dictation app. Double-tap Control, speak, an
 It is designed as a focused mac dictation app: one global shortcut, a compact live waveform, remote or fully local speech-to-text, and no transcript history.
 
 <p align="center">
-  <img src="Resources/Screenshots/whisp-waveform.gif" alt="Whisp recording and transcription waveform" width="380" />
+  <img src="Resources/Screenshots/whisp-waveform-en.gif" alt="Whisp recording and transcription waveform in English" width="380" />
 </p>
 
 ## Features
@@ -41,7 +41,7 @@ It is designed as a focused mac dictation app: one global shortcut, a compact li
 2. Drag **Whisp** into **Applications**.
 3. Launch Whisp and grant the permissions required by the features you use.
 
-The current public build (`v0.4.0`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Release archives are still signed with Sparkle EdDSA so existing installations can verify and install in-app updates.
+The current public build (`v0.4.1`) is ad-hoc signed and has not been notarized with an Apple Developer ID. macOS may therefore block its first launch. Release archives are still signed with Sparkle EdDSA so existing installations can verify and install in-app updates.
 
 If macOS blocks this version:
 

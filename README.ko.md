@@ -11,7 +11,7 @@ Whisp는 작고 오픈 소스인 macOS 받아쓰기 앱입니다. Control 키를
 하나의 전역 단축키, 작고 실시간으로 움직이는 파형, 원격 또는 완전한 로컬 음성 인식에 집중했으며 오디오와 받아쓰기 기록을 저장하지 않습니다.
 
 <p align="center">
-  <img src="Resources/Screenshots/whisp-waveform.gif" alt="Whisp 녹음 및 전사 파형" width="380" />
+  <img src="Resources/Screenshots/whisp-waveform-en.gif" alt="Whisp 영문 녹음 및 전사 파형" width="380" />
 </p>
 
 ## 주요 기능
@@ -41,7 +41,7 @@ Whisp는 작고 오픈 소스인 macOS 받아쓰기 앱입니다. Control 키를
 2. **Whisp**를 **Applications** 폴더로 드래그합니다.
 3. Whisp를 실행하고 사용하는 기능에 필요한 권한을 허용합니다.
 
-현재 공개 버전인 `v0.4.0`은 임시 서명되어 있으며 Apple Developer ID 공증을 받지 않았습니다. 따라서 macOS가 첫 실행을 차단할 수 있습니다. 릴리스 파일에는 Sparkle EdDSA 서명이 포함되므로 기존 설치본은 앱 안에서 업데이트 파일을 검증하고 설치할 수 있습니다.
+현재 공개 버전인 `v0.4.1`은 임시 서명되어 있으며 Apple Developer ID 공증을 받지 않았습니다. 따라서 macOS가 첫 실행을 차단할 수 있습니다. 릴리스 파일에는 Sparkle EdDSA 서명이 포함되므로 기존 설치본은 앱 안에서 업데이트 파일을 검증하고 설치할 수 있습니다.
 
 macOS가 현재 버전의 실행을 차단하면 다음 순서로 여세요.
 

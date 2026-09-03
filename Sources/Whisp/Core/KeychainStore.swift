@@ -41,10 +41,12 @@ enum KeychainStore {
             kSecAttrAccount as String: account,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
-            // 읽기 때문에 macOS 암호 창을 띄우지 않습니다. 로컬 개발 빌드의
-            // 서명이 바뀌어 접근할 수 없으면 빈 값으로 보여 주고, 명시적인
-            // 저장 동작에서만 Keychain이 필요한 확인을 요청하게 합니다.
-            kSecUseAuthenticationContext as String: authenticationContext
+            // LAContext만으로는 로그인 Keychain의 ACL 확인 창까지 항상
+            // 억제되지 않습니다. 인증이 필요한 항목은 조용히 건너뛰어 앱 실행,
+            // 업데이트, provider 전환만으로 암호 창이 나타나지 않게 합니다.
+            // 사용자가 저장을 눌렀을 때의 쓰기만 필요한 확인을 허용합니다.
+            kSecUseAuthenticationContext as String: authenticationContext,
+            kSecUseAuthenticationUI as String: kSecUseAuthenticationUISkip
         ]
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)

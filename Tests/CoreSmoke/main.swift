@@ -23,6 +23,10 @@ expect(
 expect(AppLanguage.korean.text("일반", "General") == "일반", "한국어 UI 선택")
 expect(AppLanguage.english.text("일반", "General") == "General", "영어 UI 선택")
 expect(RemoteProvider.custom.title(.english) == "Custom", "provider 이름 현지화")
+expect(
+    (try? KeychainStore.get(account: "core-smoke-missing-account")) == nil,
+    "Keychain 읽기는 인증 UI 없이 처리"
+)
 let catalogModelWithoutTags = try! JSONDecoder().decode(
     VercelTranscriptionModel.self,
     from: Data(#"{"id":"test/stt","name":"STT","description":"Test","type":"transcription","owned_by":"test","supported_specifications":["v4"],"pricing":{}}"#.utf8)
